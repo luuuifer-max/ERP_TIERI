@@ -97,7 +97,7 @@ const cargarProductosDeshabilitados = async () => {
     if (!respuesta.ok || !datos.ok) {
       throw new Error(
         datos.mensaje ||
-        'No se pudieron cargar los productos deshabilitados'
+        'No se pudieron cargar los productos deshabilitadossssssssss'
       )
     }
 
