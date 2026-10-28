@@ -20,23 +20,23 @@ Gestionar:
 - db
 - app
 - scripts
-- logs
+- logsssss
 
 
-# ERP TIERI - DOCUMENTACIÓN DEL PROYECTO
+# ERP TIERI - DOCUMENTACIï¿½N DEL PROYECTO
 
-## ?? INFORMACIÓN DE LA BASE DE DATOS
+## ?? INFORMACIï¿½N DE LA BASE DE DATOS
 
 **Nombre de la base:** tieri_erp
 **Servidor:** localhost (tu computadora)
 **Puerto:** 5432
 **Usuario:** postgres
-**Contraseña:** admin123
+**Contraseï¿½a:** admin123
 
 ## ?? USUARIO ADMINISTRADOR
 
 **Usuario:** admin
-**Contraseña:** admin123
+**Contraseï¿½a:** admin123
 
 ## ?? TABLAS CREADAS (19 en total)
 
@@ -60,7 +60,7 @@ Gestionar:
 18. cierres_caja
 19. auditoria
 
-## ?? PRÓXIMOS PASOS
+## ?? PRï¿½XIMOS PASOS
 
 1. Crear proyecto C# en VS Code
 2. Conectar con PostgreSQL
@@ -75,7 +75,7 @@ Gestionar:
 - Frontend (App Visual): 0% ?
 - Testing: 0% ?
 
-## ?? COMANDOS ÚTILES PARA CONECTARSE
+## ?? COMANDOS ï¿½TILES PARA CONECTARSE
 
 Para abrir PostgreSQL desde PowerShell:
 
