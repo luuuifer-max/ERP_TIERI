@@ -56,7 +56,7 @@ function App() {
 
           <h1>Tienda Tieri</h1>
 
-          <p>ERP MINIMARKET BOLIVIA</p>
+          <p>ERP MINIMARKET SANTA CRUZ</p>
         </div>
 
         <div className="login-title">
