@@ -2,6 +2,7 @@
 import { createPortal } from 'react-dom'
 import * as XLSX from 'xlsx'
 import JsBarcode from 'jsbarcode'
+import { API } from './api'
 
 const auth = () => ({ Authorization: `Bearer ${localStorage.getItem('tieri_token') || ''}`, 'Content-Type': 'application/json' })
 
@@ -100,7 +101,7 @@ function Inventario({ usuario, modoCreacion = false, nombreInicial = '', product
 
   useEffect(() => {
     if (!puedeTransferir) return
-    fetch('http://localhost:3000/api/sucursales', { headers: auth() })
+    fetch(`${API}/sucursales`, { headers: auth() })
       .then((respuesta) => respuesta.json())
       .then((datos) => { if (datos.ok) setSucursales(datos.sucursales || []) })
       .catch(() => {})
@@ -124,7 +125,7 @@ function Inventario({ usuario, modoCreacion = false, nombreInicial = '', product
   }))
 
   const actualizarHistorialTransferencias = async () => {
-    const respuesta = await fetch('http://localhost:3000/api/transferencias', { headers: auth() })
+    const respuesta = await fetch(`${API}/transferencias`, { headers: auth() })
     const datos = await respuesta.json()
     if (!respuesta.ok || !datos.ok) throw new Error(datos.mensaje || 'No se pudo cargar el historial de transferencias')
     const anteriores = (datos.transferencias || []).map((item) => ({
@@ -157,7 +158,7 @@ function Inventario({ usuario, modoCreacion = false, nombreInicial = '', product
         if (cantidadBase > Number(producto.stock_actual || 0)) throw new Error(`La cantidad supera el stock disponible de ${producto.nombre}`)
         return { producto_id: producto.id, presentacion_id: presentacion?.id || null, cantidad_presentacion: cantidadPresentacion, unidades_sueltas: unidadesSueltas }
       })
-      const respuesta = await fetch('http://localhost:3000/api/transferencias', {
+      const respuesta = await fetch(`${API}/transferencias`, {
         method: 'POST',
         headers: auth(),
         body: JSON.stringify({
@@ -193,7 +194,7 @@ function Inventario({ usuario, modoCreacion = false, nombreInicial = '', product
     if (!codigoLimpio) return setErrorTransferencia('Escanea o escribe el código del ticket')
     setErrorTransferencia('')
     try {
-      const respuesta = await fetch(`http://localhost:3000/api/transferencias/ticket/${encodeURIComponent(codigoLimpio)}`, { headers: auth() })
+      const respuesta = await fetch(`${API}/transferencias/ticket/${encodeURIComponent(codigoLimpio)}`, { headers: auth() })
       const datos = await respuesta.json()
       if (!respuesta.ok || !datos.ok) throw new Error(datos.mensaje || 'No se encontró el ticket')
       const ticket = datos.ticket
@@ -211,7 +212,7 @@ function Inventario({ usuario, modoCreacion = false, nombreInicial = '', product
     setGuardandoRecepcion(true)
     setErrorTransferencia('')
     try {
-      const respuesta = await fetch(`http://localhost:3000/api/transferencias/${encodeURIComponent(ticketEnRecepcion.codigo)}/recepcion`, {
+      const respuesta = await fetch(`${API}/transferencias/${encodeURIComponent(ticketEnRecepcion.codigo)}/recepcion`, {
         method: 'POST', headers: auth(),
         body: JSON.stringify({ items: lineasRecepcion.map((linea) => ({ item_id: linea.item_id, cantidad_recibida: Number(linea.cantidad_recibida) || 0 })), nota: notaRecepcion, cerrar_con_diferencia: cerrarConDiferencia })
       })
@@ -229,7 +230,7 @@ function Inventario({ usuario, modoCreacion = false, nombreInicial = '', product
     if (!window.confirm(`¿Confirmas que el saldo pendiente del ticket ${ticket.codigo} regresó físicamente a ${ticket.sucursal_origen}? Se devolverá ese saldo al stock de origen.`)) return
     setErrorTransferencia('')
     try {
-      const respuesta = await fetch(`http://localhost:3000/api/transferencias/${encodeURIComponent(ticket.codigo)}/anular`, { method: 'POST', headers: auth(), body: JSON.stringify({ confirmar_devolucion: true }) })
+      const respuesta = await fetch(`${API}/transferencias/${encodeURIComponent(ticket.codigo)}/anular`, { method: 'POST', headers: auth(), body: JSON.stringify({ confirmar_devolucion: true }) })
       const datos = await respuesta.json()
       if (!respuesta.ok || !datos.ok) throw new Error(datos.mensaje || 'No se pudo anular el ticket')
       setMensajeExito(datos.mensaje)
@@ -293,7 +294,7 @@ function Inventario({ usuario, modoCreacion = false, nombreInicial = '', product
       setCargando(true)
       setError('')
 
-      const respuesta = await fetch(`http://localhost:3000/api/productos?sucursal_id=${usuario.sucursal_id}`, { headers: auth() })
+      const respuesta = await fetch(`${API}/productos?sucursal_id=${usuario.sucursal_id}`, { headers: auth() })
       const datos = await respuesta.json()
 
       if (!respuesta.ok || !datos.ok) {
@@ -314,7 +315,7 @@ const cargarProductosDeshabilitados = async () => {
     setError('')
 
     const respuesta = await fetch(
-      `http://localhost:3000/api/productos/deshabilitados?sucursal_id=${usuario.sucursal_id}`,
+      `${API}/productos/deshabilitados?sucursal_id=${usuario.sucursal_id}`,
       { headers: auth() }
     )
 
@@ -571,9 +572,9 @@ const productosFiltrados = productos.filter((producto) => {
         
 	productoEditando
           
-	? `http://localhost:3000/api/productos/${productoEditando.id}`
+  ? `${API}/productos/${productoEditando.id}`
           
-	: 'http://localhost:3000/api/productos',
+  : `${API}/productos`,
         
 	{
           
@@ -1025,7 +1026,7 @@ await cargarProductos()
       setError('')
 
       const respuesta = await fetch(
-        `http://localhost:3000/api/productos/${producto.id}/estado`,
+        `${API}/productos/${producto.id}/estado`,
         {
           method: 'PUT',
           headers: auth(),
@@ -1214,7 +1215,7 @@ await cargarProductos()
 
       for (const fila of excelVistaPrevia) {
         const respuesta = await fetch(
-          'http://localhost:3000/api/productos',
+          `${API}/productos`,
           {
             method: 'POST',
             headers: auth(),

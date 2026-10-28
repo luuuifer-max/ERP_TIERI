@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
-
-const API = 'http://localhost:3000/api'
+import { API } from './api'
 const METODOS = ['EFECTIVO', 'QR', 'TARJETA', 'TRANSFERENCIA', 'OTROS']
 const auth = () => ({ Authorization: `Bearer ${localStorage.getItem('tieri_token') || ''}`, 'Content-Type': 'application/json' })
 

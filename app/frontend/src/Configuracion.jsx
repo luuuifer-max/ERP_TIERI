@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-
-const API = 'http://localhost:3000/api'
+import { API } from './api'
 
 function Configuracion({ usuario }) {
   const [formulario, setFormulario] = useState({ nombre: 'Tienda Tieri', direccion: '', telefono: '', logo: '' })

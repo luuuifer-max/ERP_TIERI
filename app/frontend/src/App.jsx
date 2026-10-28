@@ -8,6 +8,7 @@ import Cotizaciones from './Cotizaciones'
 import Administracion from './Administracion'
 import Compras from './Compras'
 import Clientes from './Clientes'
+import { API } from './api'
 
 class InventarioErrorBoundary extends Component {
   state = { error: null }
@@ -57,7 +58,7 @@ function App() {
     setCargando(true)
 
     try {
-      const respuesta = await fetch('http://localhost:3000/api/login', {
+      const respuesta = await fetch(`${API}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -96,7 +97,7 @@ function App() {
 
   useEffect(() => {
     if (!sesion || !esDueno) return
-    fetch('http://localhost:3000/api/sucursales', { headers: { Authorization: `Bearer ${localStorage.getItem('tieri_token') || ''}` } })
+    fetch(`${API}/sucursales`, { headers: { Authorization: `Bearer ${localStorage.getItem('tieri_token') || ''}` } })
       .then((respuesta) => respuesta.json())
       .then((datos) => { if (datos.ok) setSucursales(datos.sucursales || []) })
       .catch(() => {})
@@ -104,7 +105,7 @@ function App() {
 
   useEffect(() => {
     if (!sesion?.sucursal_id) return
-    fetch(`http://localhost:3000/api/dashboard/resumen?sucursal_id=${sesion.sucursal_id}`, { headers: { Authorization: `Bearer ${localStorage.getItem('tieri_token') || ''}` } })
+    fetch(`${API}/dashboard/resumen?sucursal_id=${sesion.sucursal_id}`, { headers: { Authorization: `Bearer ${localStorage.getItem('tieri_token') || ''}` } })
       .then((respuesta) => respuesta.json())
       .then((datos) => { if (datos.ok) setResumen(datos) })
       .catch(() => {})
@@ -113,7 +114,7 @@ function App() {
   const cambiarSucursal = async (evento) => {
     const sucursal_id = Number(evento.target.value)
     if (!sucursal_id || sucursal_id === Number(sesion.sucursal_id)) return
-    const respuesta = await fetch('http://localhost:3000/api/sesion/sucursal', {
+    const respuesta = await fetch(`${API}/sesion/sucursal`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${localStorage.getItem('tieri_token') || ''}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ sucursal_id })

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-
-const API = 'http://localhost:3000/api'
+import { API } from './api'
 const auth = () => ({ Authorization: `Bearer ${localStorage.getItem('tieri_token') || ''}`, 'Content-Type': 'application/json' })
 const dinero = (valor) => `Bs ${Number(valor || 0).toFixed(2)}`
 const fechaHoy = new Date().toISOString().slice(0, 10)

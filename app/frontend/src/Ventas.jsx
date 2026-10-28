@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-
-const API = 'http://localhost:3000/api'
+import { API } from './api'
 const METODOS = ['EFECTIVO', 'QR', 'TARJETA', 'TRANSFERENCIA', 'OTROS']
 const PAUSADAS_KEY = 'tieri_ventas_pausadas'
 const RAPIDOS_KEY = 'tieri_productos_rapidos'

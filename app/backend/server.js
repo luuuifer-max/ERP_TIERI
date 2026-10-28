@@ -6,10 +6,11 @@ const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const { createCorsOptions } = require('./cors-config');
 
 const app = express();
 
-app.use(cors());
+app.use(cors(createCorsOptions()));
 app.use(express.json());
 
 const pool = new Pool({

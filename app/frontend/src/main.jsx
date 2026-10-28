@@ -14,18 +14,6 @@ document.addEventListener('wheel', (evento) => {
   }
 }, { passive: true })
 
-// Conexión desde otros dispositivos: el código escribe la API como http://localhost:3000.
-// En la propia PC (localhost) no cambia nada. Si la app se abre desde otro dispositivo
-// (por ejemplo por Tailscale), las peticiones a la API se hacen al mismo sitio desde el que
-// se abrió la app, y el servidor de Vite las reenvía al backend (ver vite.config.js).
-const API_ORIGINAL = 'http://localhost:3000'
-if (!['localhost', '127.0.0.1'].includes(window.location.hostname)) {
-  const fetchOriginal = window.fetch.bind(window)
-  window.fetch = (entrada, opciones) => (typeof entrada === 'string' && entrada.startsWith(API_ORIGINAL)
-    ? fetchOriginal(window.location.origin + entrada.slice(API_ORIGINAL.length), opciones)
-    : fetchOriginal(entrada, opciones))
-}
-
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />

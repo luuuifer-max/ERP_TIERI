@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
-
-const API = 'http://localhost:3000/api'
+import { API } from './api'
 const dinero = (valor) => `Bs ${Number(valor || 0).toFixed(2)}`
 const auth = () => ({ Authorization: `Bearer ${localStorage.getItem('tieri_token') || ''}` })
 const hoy = new Date().toISOString().slice(0, 10)

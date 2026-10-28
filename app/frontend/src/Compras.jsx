@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import Inventario from './Inventario'
-
-const API = 'http://localhost:3000/api'
+import { API } from './api'
 const auth = () => ({ Authorization: `Bearer ${localStorage.getItem('tieri_token') || ''}`, 'Content-Type': 'application/json' })
 const dinero = (valor) => `Bs ${Number(valor || 0).toFixed(2)}`
 

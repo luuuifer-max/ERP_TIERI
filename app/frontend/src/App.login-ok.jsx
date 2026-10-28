@@ -1,4 +1,5 @@
 ﻿import { useState } from 'react'
+import { API } from './api'
 
 function App() {
   const [usuario, setUsuario] = useState('')
@@ -15,7 +16,7 @@ function App() {
     setCargando(true)
 
     try {
-      const respuesta = await fetch('http://localhost:3000/api/login', {
+      const respuesta = await fetch(`${API}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
