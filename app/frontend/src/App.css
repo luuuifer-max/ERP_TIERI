@@ -182,3 +182,26 @@
     border-right-color: var(--border);
   }
 }
+
+.presentaciones-lista {
+  display: grid;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.presentacion-fila {
+  display: grid;
+  grid-template-columns: 1.2fr .7fr .9fr .9fr 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.presentacion-fila span {
+  font-size: .85rem;
+  color: #176b43;
+  font-weight: 600;
+}
+
+@media (max-width: 800px) {
+  .presentacion-fila { grid-template-columns: 1fr 1fr; }
+}

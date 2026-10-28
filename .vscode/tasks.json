@@ -1,0 +1,156 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Preparar clon limpio ERP",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"$dest='C:\\Users\\Luisfer\\Desktop\\ERP_TIERI_GITHUB'; New-Item -ItemType Directory -Force -Path \"$dest\\app\\backend\",\"$dest\\app\\frontend\\src\" | Out-Null; Copy-Item 'C:\\Users\\Luisfer\\Desktop\\ERP_TIERI\\README.md' $dest -Force; Copy-Item 'C:\\Users\\Luisfer\\Desktop\\ERP_TIERI\\app\\backend\\package.json','C:\\Users\\Luisfer\\Desktop\\ERP_TIERI\\app\\backend\\server.js','C:\\Users\\Luisfer\\Desktop\\ERP_TIERI\\app\\backend\\.env' \"$dest\\app\\backend\" -Force; Copy-Item 'C:\\Users\\Luisfer\\Desktop\\ERP_TIERI\\app\\frontend\\package.json','C:\\Users\\Luisfer\\Desktop\\ERP_TIERI\\app\\frontend\\package-lock.json','C:\\Users\\Luisfer\\Desktop\\ERP_TIERI\\app\\frontend\\index.html','C:\\Users\\Luisfer\\Desktop\\ERP_TIERI\\app\\frontend\\eslint.config.js','C:\\Users\\Luisfer\\Desktop\\ERP_TIERI\\app\\frontend\\vite.config.js' \"$dest\\app\\frontend\" -Force; Copy-Item 'C:\\Users\\Luisfer\\Desktop\\ERP_TIERI\\app\\frontend\\src\\*.jsx','C:\\Users\\Luisfer\\Desktop\\ERP_TIERI\\app\\frontend\\src\\*.css','C:\\Users\\Luisfer\\Desktop\\ERP_TIERI\\app\\frontend\\src\\main.jsx' \"$dest\\app\\frontend\\src\" -Force; Write-Output DONE"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Install transfer barcode library",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"install",
+				"jsbarcode",
+				"--prefix",
+				"app/frontend"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Build ERP frontend",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"build",
+				"--prefix",
+				"app/frontend"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$eslint - stylish"
+			]
+		},
+		{
+			"label": "Lint transfer workflow",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"app/frontend/node_modules/eslint/bin/eslint.js",
+				"app/frontend/src/Inventario.jsx"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$eslint - stylish"
+			]
+		},
+		{
+			"label": "Check backend syntax",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"--check",
+				"app/backend/server.js"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Build transfer tickets",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"build",
+				"--prefix",
+				"app/frontend"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Lint inventory transfer feature",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"exec",
+				"--prefix",
+				"app/frontend",
+				"--",
+				"eslint",
+				"src/Inventario.jsx"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$eslint - stylish"
+			]
+		},
+		{
+			"label": "Lint transfer UI",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"exec",
+				"--prefix",
+				"app/frontend",
+				"--",
+				"eslint",
+				"app/frontend/src/Inventario.jsx"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Audit production frontend deps",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"audit",
+				"--prefix",
+				"app/frontend",
+				"--omit=dev"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Start transfer UI preview",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"dev",
+				"--prefix",
+				"app/frontend",
+				"--",
+				"--host",
+				"127.0.0.1"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Final frontend build",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"build",
+				"--prefix",
+				"app/frontend"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		}
+	]
+}

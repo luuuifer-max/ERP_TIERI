@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 const API = 'http://localhost:3000/api'
 const METODOS = ['EFECTIVO', 'QR', 'TARJETA', 'TRANSFERENCIA', 'OTROS']
+const auth = () => ({ Authorization: `Bearer ${localStorage.getItem('tieri_token') || ''}`, 'Content-Type': 'application/json' })
 
 const dinero = (valor) => `Bs ${Number(valor || 0).toFixed(2)}`
 
@@ -11,8 +12,11 @@ function Caja({ usuario }) {
   const [guardando, setGuardando] = useState(false)
   const [error, setError] = useState('')
   const [modal, setModal] = useState(null)
+  const [mostrarMovimientos, setMostrarMovimientos] = useState(false)
+  const [movimientos, setMovimientos] = useState([])
   const [formulario, setFormulario] = useState({
     monto: '',
+    monto_qr: '',
     tipo: 'ingreso',
     metodo: 'EFECTIVO',
     concepto: '',
@@ -23,7 +27,7 @@ function Caja({ usuario }) {
     try {
       setCargando(true)
       setError('')
-      const respuesta = await fetch(`${API}/caja/estado?sucursal_id=${usuario.sucursal_id}`)
+      const respuesta = await fetch(`${API}/caja/estado?sucursal_id=${usuario.sucursal_id}`, { headers: auth() })
       const datos = await respuesta.json()
       if (!respuesta.ok || !datos.ok) throw new Error(datos.mensaje || 'No se pudo cargar Caja')
       setEstado(datos)
@@ -36,7 +40,16 @@ function Caja({ usuario }) {
 
   useEffect(() => {
     cargarEstado()
-  }, [])
+  }, [usuario.sucursal_id])
+
+  const verMovimientos = async () => {
+    setMostrarMovimientos(true)
+    try {
+      const respuesta = await fetch(`${API}/caja/movimientos?sucursal_id=${usuario.sucursal_id}`, { headers: auth() })
+      const datos = await respuesta.json()
+      if (datos.ok) setMovimientos(datos.movimientos || [])
+    } catch {}
+  }
 
   const cambiarFormulario = (campo, valor) => {
     setFormulario((anterior) => ({ ...anterior, [campo]: valor }))
@@ -45,6 +58,7 @@ function Caja({ usuario }) {
   const cerrarModal = () => {
     setModal(null)
     setFormulario({ monto: '', tipo: 'ingreso', metodo: 'EFECTIVO', concepto: '', observacion: '' })
+    setFormulario({ monto: '', monto_qr: '', tipo: 'ingreso', metodo: 'EFECTIVO', concepto: '', observacion: '' })
   }
 
   const enviarAccion = async (evento) => {
@@ -66,7 +80,7 @@ function Caja({ usuario }) {
 
       if (modal === 'apertura') {
         ruta = '/caja/apertura'
-        cuerpo = { usuario_id: usuario.id, sucursal_id: usuario.sucursal_id, monto_inicial: Number(formulario.monto) }
+        cuerpo = { usuario_id: usuario.id, sucursal_id: usuario.sucursal_id, monto_inicial: Number(formulario.monto), monto_inicial_qr: Number(formulario.monto_qr) || 0 }
       }
 
       if (modal === 'cierre') {
@@ -76,13 +90,14 @@ function Caja({ usuario }) {
           sucursal_id: usuario.sucursal_id,
           caja_id: estado?.caja?.id,
           monto_contado: Number(formulario.monto),
+          monto_contado_qr: Number(formulario.monto_qr) || 0,
           observacion: formulario.observacion
         }
       }
 
       const respuesta = await fetch(`${API}${ruta}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: auth(),
         body: JSON.stringify(cuerpo)
       })
       const datos = await respuesta.json()
@@ -118,6 +133,7 @@ function Caja({ usuario }) {
       </div>
 
       {error && <div className="caja-error">{error}</div>}
+      {abierta && estado.caja.expirada && <div className="caja-error">Esta caja superó las 24 horas. Cuenta el efectivo y el saldo QR y ciérrala antes de continuar.</div>}
 
       {!abierta ? (
         <div className="caja-empty">
@@ -129,7 +145,7 @@ function Caja({ usuario }) {
       ) : (
         <>
           <div className="caja-actions">
-            <button className="caja-button caja-button-secondary" onClick={() => setModal('movimiento')}>+ Registrar movimiento</button>
+            <button className="caja-button caja-button-secondary" onClick={() => setModal('movimiento')} disabled={estado.caja.expirada}>+ Registrar movimiento</button>
             <button className="caja-button caja-button-secondary caja-print-button" onClick={() => window.print()}>Imprimir reporte</button>
             <button className="caja-button caja-button-danger" onClick={() => setModal('cierre')}>Cerrar caja</button>
           </div>
@@ -138,7 +154,7 @@ function Caja({ usuario }) {
             <article className="caja-metrica caja-verde"><span>Ventas del día</span><strong>{dinero(resumen.total_ventas)}</strong><small>{resumen.cantidad_ventas || 0} operaciones</small></article>
             <article className="caja-metrica caja-verde"><span>Efectivo</span><strong>{dinero(resumen.efectivo)}</strong><small>Ingresos en efectivo</small></article>
             <article className="caja-metrica caja-naranja"><span>Pagos digitales</span><strong>{dinero(Number(resumen.qr || 0) + Number(resumen.tarjeta || 0) + Number(resumen.transferencia || 0))}</strong><small>QR, tarjeta y transferencia</small></article>
-            <article className="caja-metrica caja-roja"><span>Egresos</span><strong>{dinero(resumen.egresos)}</strong><small>Movimientos registrados</small></article>
+            <article className="caja-metrica caja-roja"><span>Egresos</span><strong>{dinero(resumen.egresos)}</strong><small><button type="button" onClick={verMovimientos} style={{ border: 0, background: 'transparent', color: 'inherit', textDecoration: 'underline', cursor: 'pointer', padding: 0, font: 'inherit' }}>Ver detalle</button></small></article>
             <article className={`caja-metrica ${claseDiferencia}`}><span>Saldo esperado</span><strong>{dinero(resumen.efectivo_esperado)}</strong><small>Diferencia actual: {dinero(diferencia)}</small></article>
           </div>
 
@@ -151,6 +167,7 @@ function Caja({ usuario }) {
 
           <section className="caja-panel caja-info-panel">
             <div><span>Saldo inicial</span><strong>{dinero(estado.caja.monto_inicial)}</strong></div>
+                        <div><span>QR inicial / esperado</span><strong>{dinero(estado.caja.monto_inicial_qr)} / {dinero(resumen.qr_esperado)}</strong></div>
             <div><span>Apertura</span><strong>{new Date(estado.caja.fecha_apertura).toLocaleString()}</strong></div>
             <div><span>Responsable</span><strong>{estado.caja.usuario_nombre || usuario.nombre}</strong></div>
           </section>
@@ -162,9 +179,11 @@ function Caja({ usuario }) {
             <p>Responsable: {estado.caja.usuario_nombre || usuario.nombre}</p>
             <hr />
             <p>Saldo inicial: {dinero(estado.caja.monto_inicial)}</p>
+                        <p>QR inicial: {dinero(estado.caja.monto_inicial_qr)}</p>
             <p>Ventas: {dinero(resumen.total_ventas)} ({resumen.cantidad_ventas || 0} operaciones)</p>
             <p>Efectivo: {dinero(resumen.efectivo)}</p>
             <p>QR: {dinero(resumen.qr)}</p>
+                        <p>QR esperado: {dinero(resumen.qr_esperado)}</p>
             <p>Tarjeta: {dinero(resumen.tarjeta)}</p>
             <p>Transferencia: {dinero(resumen.transferencia)}</p>
             <p>Otros: {dinero(resumen.otros)}</p>
@@ -179,7 +198,8 @@ function Caja({ usuario }) {
         <div className="caja-modal" role="dialog" aria-modal="true">
           <div className="caja-modal-header"><div><span className="caja-kicker">{modal === 'apertura' ? 'NUEVA JORNADA' : modal === 'cierre' ? 'CIERRE DIARIO' : 'MOVIMIENTO MANUAL'}</span><h3>{modal === 'apertura' ? 'Abrir caja' : modal === 'cierre' ? 'Cerrar caja' : 'Registrar movimiento'}</h3></div><button className="caja-close" onClick={cerrarModal}>×</button></div>
           <form onSubmit={enviarAccion}>
-            <label>{modal === 'cierre' ? 'Efectivo contado' : modal === 'apertura' ? 'Monto inicial' : 'Monto'}<input autoFocus type="number" min="0" step="0.01" value={formulario.monto} onChange={(e) => cambiarFormulario('monto', e.target.value)} required /></label>
+            <label>{modal === 'cierre' ? 'Efectivo contado' : modal === 'apertura' ? 'Efectivo inicial' : 'Monto'}<input autoFocus type="number" min="0" step="any" value={formulario.monto} onChange={(e) => cambiarFormulario('monto', e.target.value)} required /></label>
+            {(modal === 'apertura' || modal === 'cierre') && <label>{modal === 'apertura' ? 'Saldo QR inicial' : 'Saldo QR contado'}<input type="number" min="0" step="any" value={formulario.monto_qr} onChange={(e) => cambiarFormulario('monto_qr', e.target.value)} required />{modal === 'cierre' && <small>Esperado: {dinero(resumen.qr_esperado)}</small>}</label>}
             {modal === 'movimiento' && <>
               <label>Tipo<select value={formulario.tipo} onChange={(e) => cambiarFormulario('tipo', e.target.value)}><option value="ingreso">Ingreso</option><option value="egreso">Egreso</option></select></label>
               <label>Método<select value={formulario.metodo} onChange={(e) => cambiarFormulario('metodo', e.target.value)}>{METODOS.map((metodo) => <option key={metodo} value={metodo}>{metodo}</option>)}</select></label>
@@ -188,6 +208,19 @@ function Caja({ usuario }) {
             {modal === 'cierre' && <label>Observación<textarea value={formulario.observacion} onChange={(e) => cambiarFormulario('observacion', e.target.value)} placeholder="Opcional" rows="3" /></label>}
             <div className="caja-modal-footer"><button type="button" className="caja-button caja-button-secondary" onClick={cerrarModal}>Cancelar</button><button className="caja-button caja-button-primary" disabled={guardando}>{guardando ? 'Guardando...' : 'Confirmar'}</button></div>
           </form>
+        </div>
+      </div>}
+
+      {mostrarMovimientos && <div className="caja-modal-overlay" onMouseDown={(evento) => evento.target === evento.currentTarget && setMostrarMovimientos(false)}>
+        <div className="caja-modal" role="dialog" aria-modal="true" style={{ maxWidth: '560px', maxHeight: '75vh', overflowY: 'auto' }}>
+          <div className="caja-modal-header"><div><span className="caja-kicker">DETALLE</span><h3>Movimientos de caja (ingresos y egresos)</h3></div><button className="caja-close" onClick={() => setMostrarMovimientos(false)}>×</button></div>
+          {!movimientos.length && <p style={{ color: '#8b9992', fontSize: '12px' }}>No hay movimientos manuales ni devoluciones registradas en esta caja todavía. (Las ventas no aparecen aquí, solo ingresos/egresos y devoluciones.)</p>}
+          {!!movimientos.length && <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {movimientos.map((m) => <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', padding: '10px', borderRadius: '8px', background: m.tipo === 'egreso' ? '#fdf1ef' : '#f0f9f3' }}>
+              <div><strong style={{ fontSize: '12px' }}>{m.concepto}</strong><br /><small style={{ color: '#8b9992' }}>{new Date(m.fecha).toLocaleString()} · {m.usuario || 'Usuario'} · {m.metodo}</small></div>
+              <strong style={{ color: m.tipo === 'egreso' ? '#bb5b4e' : '#176b43', whiteSpace: 'nowrap' }}>{m.tipo === 'egreso' ? '-' : '+'} {dinero(m.monto)}</strong>
+            </div>)}
+          </div>}
         </div>
       </div>}
     </section>
